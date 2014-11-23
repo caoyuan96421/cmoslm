@@ -20,16 +20,22 @@ public abstract class MOSFET{
      */
     public final Technology tech;
     
+    public static final int NMOS=0;
+    public static final int PMOS=1;
+
+    public final int type;
+    
     /**
      * Constructor
      * @param w width of MOSFET
      * @param l length of MOSFET
      * @param tech technology used for MOSFET
      */
-    public MOSFET(double w, double l, Technology tech){
+    public MOSFET(double w, double l, Technology tech, int type){
         this.w = w;
         this.l = l;
         this.tech = tech;
+        this.type = type;
     }
     
     /**

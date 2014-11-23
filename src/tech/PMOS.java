@@ -18,7 +18,7 @@ public class PMOS extends MOSFET{
      * @param tech
      */
     public PMOS(double w, double l, Technology tech){
-        super(w,l,tech);
+        super(w,l,tech, PMOS);
         if(this.w < tech.wmin){
             this.w = tech.wmin;
         }

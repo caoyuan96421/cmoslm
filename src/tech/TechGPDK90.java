@@ -40,7 +40,7 @@ public class TechGPDK90 extends Technology{
     
     /**Channel length coefficient at RT*/
     private static final double ln = 11.4e-9/Math.log(2)/300;
-    private static final double lp = 11.4e-9/Math.log(2)/300;
+    private static final double lp = 16e-9/Math.log(2)/300;
     
     static final double wmin = 120e-9;
     static final double lmin = 100e-9;
@@ -128,8 +128,8 @@ public class TechGPDK90 extends Technology{
     }
     
     public static void main(String args[]){
-        double vgs = 0;
-        double vds = 1;
+        double vgs = 5;
+        double vds = 1.0;
         NMOS mos1 = new NMOS(360e-9,130e-9,Technology.Tech_GPDK90);
         System.out.println(mos1.Id_leak(vgs, vds));
         PMOS mos2 = new PMOS(480e-9,100e-9,Technology.Tech_GPDK90);

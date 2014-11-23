@@ -18,7 +18,7 @@ public class NMOS extends MOSFET{
      * @param tech
      */
     public NMOS(double w, double l, Technology tech){
-        super(w,l,tech);
+        super(w,l,tech, NMOS);
         if(this.w < tech.wmin){
             this.w = tech.wmin;
         }
