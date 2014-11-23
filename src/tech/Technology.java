@@ -9,6 +9,19 @@ package tech;
  *
  * @author caoyuan9642
  */
-public class Technology {
+public abstract class Technology {
+    static double wmin;
+    static double lmin;
     
+    protected final double T;
+    
+    public Technology(double T){
+        this.T = T;
+    }
+    
+    public abstract double Id_N(double vgs, double vds, MOSFET mos);
+    public abstract double Id_P(double vgs, double vds, MOSFET mos);
+    
+    /**90 nm Technology at room temperature*/
+    public static final Technology Tech_GPDK90 = new TechGPDK90(300);
 }
