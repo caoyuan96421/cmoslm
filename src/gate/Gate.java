@@ -4,10 +4,13 @@
  * and open the template in the editor.
  */
 package gate;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.TreeMap;
 import tech.*;
 /**
@@ -21,6 +24,9 @@ public class Gate {
     List<Node> input_nodes;
     List<Node> output_nodes;
     List<Device> devices;
+    
+    private Deque<Node> q;
+    private static final int MAX_RETRY= 5;
     
     public Gate(String name){
         this.name = name;
@@ -66,6 +72,122 @@ public class Gate {
         output_nodes.add(n);
     }
     
+    private void reset_all(){
+        for (Node n : nodes) {
+            n.logic = Logic.UNKNOWN;
+            n.retries = 0;
+        }
+    }
+    
+    private void init_logic(Logic input[]){
+        q = new ArrayDeque<>();
+        nodes.get(0).logic = Logic.LOW;     //GND
+        nodes.get(1).logic = Logic.HIGH;    //VDD
+        q.addLast(nodes.get(0));
+        q.addLast(nodes.get(1));
+        for(int i=0;i<input.length;i++){
+            input_nodes.get(i).logic = input[i];
+            q.addLast(input_nodes.get(i));
+        }
+    }
+    
+    private void update_logic(){
+        while(!q.isEmpty()){
+            Node node = q.pollFirst();
+            System.out.println("Updating: " + node.toString());
+            boolean retry = false;
+            for (Device device : node.devices) {
+                if(device instanceof MOSDevice){
+                    MOSDevice mos = (MOSDevice) device;
+                    if(node == mos.G){
+                        /*Don't need do anything*/
+                        /*Wait until D or S is updated*/
+                        continue;
+                    }
+                    switch(mos.model.type){
+                        case MOSFET.NMOS:
+                            if(mos.G.logic == Logic.HIGH){
+                                if(mos.D.logic != Logic.UNKNOWN && mos.S.logic != Logic.UNKNOWN){
+                                    if(mos.D.logic != mos.S.logic){
+                                        throw new UnsupportedOperationException("Short circuit detected. Aborting");
+                                    }
+                                    else{
+                                        continue;
+                                    }
+                                }
+                                System.out.println(" - " + mos.toString());
+                                if(node == mos.D){
+                                    mos.S.logic = node.logic;
+                                    q.addLast(mos.S);
+                                }
+                                else{
+                                    mos.D.logic = node.logic;
+                                    q.addLast(mos.D);
+                                }
+                            }
+                            else if(mos.G.logic == Logic.UNKNOWN){
+                                /*Gate not updated yet, postpone*/
+                                node.retries++;
+                                if(node.retries > MAX_RETRY){
+                                    throw new UnsupportedOperationException("Floating gate detected. Unsupported yet.");
+                                }
+                                System.out.println("Updating " + node.toString() + " postponed.");
+                                retry = true;
+                            }
+                            break;
+                        case MOSFET.PMOS:
+                            if(mos.G.logic == Logic.LOW){
+                                if(mos.D.logic != Logic.UNKNOWN && mos.S.logic != Logic.UNKNOWN){
+                                    if(mos.D.logic != mos.S.logic){
+                                        throw new UnsupportedOperationException("Short circuit detected. Aborting");
+                                    }
+                                    else{
+                                        continue;
+                                    }
+                                }
+                                System.out.println(" - " + mos.toString());
+                                if(node == mos.D){
+                                    mos.S.logic = node.logic;
+                                    q.addLast(mos.S);
+                                }
+                                else{
+                                    mos.D.logic = node.logic;
+                                    q.addLast(mos.D);
+                                }
+                            }
+                            else if(mos.G.logic == Logic.UNKNOWN){
+                                /*Gate not updated yet, postpone*/
+                                node.retries++;
+                                if(node.retries > MAX_RETRY){
+                                    throw new UnsupportedOperationException("Floating gate detected. Unsupported yet.");
+                                }
+                                retry = true;
+                            }
+                            break;
+                    }
+                }
+                else{
+                    throw new UnsupportedOperationException("Device other than MOSFET is not implemented yet");
+                }
+            }
+            if(retry){
+                q.addLast(node);
+            }
+        }
+    }
+    
+    public boolean updateLogic(Logic ... logic){
+        reset_all();
+        init_logic(logic);
+        try{
+            update_logic();
+        }catch(Exception e){
+            return true;
+        }
+        return false;
+    }
+    
+    @Override
     public String toString(){
         String s = "";
         s += "Gate: " + name + "\n";
@@ -89,7 +211,12 @@ public class Gate {
         return s;
     }
     
-    /**Test function*/
+    public void printLogic(){
+        for(Node n: nodes){
+            System.out.println(n.toString() + " " + n.logic.toString());
+        }
+    }
+    
     public static void main(String args[]){
         Gate g = new Gate("NAND");
         NMOS nmos = new NMOS(240e-9, 100e-9, Technology.Tech_GPDK90);
@@ -104,5 +231,9 @@ public class Gate {
         g.addOutput("OUT");
         
         System.out.println(g.toString());
+        
+        g.updateLogic(Logic.LOW, Logic.LOW);
+        g.printLogic();
+        
     }
 }

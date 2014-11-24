@@ -18,6 +18,9 @@ public class Node {
     public int id;
     public String alias = "";
     
+    Logic logic = Logic.UNKNOWN;
+    int retries = 0;
+    
     public static final int GROUND = 0;
     public static final int VDD = 1;
     
