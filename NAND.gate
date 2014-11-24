@@ -1,0 +1,15 @@
+# NAND gate
+# CMOS logic
+# Input and Output definition
+input A
+input B
+output OUT
+# Model definition
+model nmos 240 100 ntype
+model pmos 480 100 ptype
+# Device definition
+device pmos A OUT VDD
+device pmos B OUT VDD
+device nmos A OUT INT
+device nmos B INT GND
+# End of gate definition

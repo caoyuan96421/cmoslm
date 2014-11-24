@@ -4,6 +4,13 @@
  * and open the template in the editor.
  */
 package gate;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StreamTokenizer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -235,22 +242,121 @@ public class Gate {
         }
     }
     
-    public static void main(String args[]){
-        Gate g = new Gate("NAND");
-        NMOS nmos = new NMOS(240e-9, 100e-9, Technology.Tech_GPDK90);
-        PMOS pmos = new PMOS(480e-9, 100e-9, Technology.Tech_GPDK90);
+    public static Gate loadFile(String filename) throws FileNotFoundException, IOException{
+        File file = new File(filename);
+        StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(new FileInputStream(file))));
+        Map<String, MOSFET> model_map = new TreeMap<>();
+        Gate gate = new Gate(file.getName().substring(0,file.getName().lastIndexOf('.')));
+        st.commentChar('#');/*Comment by '#'*/
+        st.lowerCaseMode(false);/*Case sensitive*/
+        st.eolIsSignificant(true);
+        while(st.ttype != StreamTokenizer.TT_EOF){
+            st.nextToken();
+            if(st.ttype == StreamTokenizer.TT_EOF){
+                break;
+            }
+            if(st.ttype == StreamTokenizer.TT_EOL){
+                continue;
+            }
+            if(st.ttype != StreamTokenizer.TT_WORD){/*Read command token in a line*/
+                throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+            }
+            String model_name;
+            MOSFET model = null;
+            switch(st.sval){
+                case "model":
+                    if(st.nextToken() != StreamTokenizer.TT_WORD){/*Read model name*/
+                        throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+                    }
+                    model_name = st.sval;
+                    if(st.nextToken() != StreamTokenizer.TT_NUMBER){/*Read width*/
+                        throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+                    }
+                    double width = st.nval * 1e-9;
+                    if(st.nextToken() != StreamTokenizer.TT_NUMBER){/*Read length*/
+                        throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+                    }
+                    double length = st.nval * 1e-9;
+                    if(st.nextToken() != StreamTokenizer.TT_WORD){/*Read Type*/
+                        throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+                    }
+                    if(st.sval.startsWith("n")){
+                        /*NMOS Model*/
+                        model = new NMOS(width, length, Technology.Tech_GPDK90);
+                    }
+                    else if(st.sval.startsWith("p")){
+                        /*PMOS Model*/
+                        model = new PMOS(width, length, Technology.Tech_GPDK90);
+                    }
+                    else{
+                        throw new UnsupportedOperationException("Unknown model type at line " + st.lineno());
+                    }
+                    model_map.put(model_name, model);
+                    System.out.println(gate.name + ": Add model " + model_name + ", w=" + width + ", l=" + length + ", " + st.sval);
+                    break;
+                case "device":
+                    /*Adds a device*/
+                    if(st.nextToken() != StreamTokenizer.TT_WORD){/*Read model name*/
+                        throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+                    }
+                    model_name = st.sval;
+                    if(!model_map.containsKey(model_name)){
+                        throw new UnsupportedOperationException("Undefined model at line " + st.lineno());
+                    }
+                    model = model_map.get(model_name);
+                    String g_name, d_name, s_name;
+                    if(st.nextToken() != StreamTokenizer.TT_WORD){/*Read model name*/
+                        throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+                    }
+                    g_name = st.sval;
+                    if(st.nextToken() != StreamTokenizer.TT_WORD){/*Read model name*/
+                        throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+                    }
+                    d_name = st.sval;
+                    if(st.nextToken() != StreamTokenizer.TT_WORD){/*Read model name*/
+                        throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+                    }
+                    s_name = st.sval;
+                    gate.addMOS(model, g_name, d_name, s_name);
+                    System.out.println(gate.name + ": Add device " + model_name + ", G=" + g_name + ", D=" + d_name + ", S=" + s_name);
+                    break;
+                case "input":
+                    /*Adds an input*/
+                    String input_name;
+                    if(st.nextToken() != StreamTokenizer.TT_WORD){/*Read model name*/
+                        throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+                    }
+                    input_name = st.sval;
+                    gate.addInput(input_name);
+                    System.out.println(gate.name + ": Add input " + input_name);
+                    break;
+                case "output":
+                    /*Adds an input*/
+                    String output_name;
+                    if(st.nextToken() != StreamTokenizer.TT_WORD){/*Read model name*/
+                        throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+                    }
+                    output_name = st.sval;
+                    gate.addOutput(output_name);
+                    System.out.println(gate.name + ": Add output " + output_name);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unknown command at line " + st.lineno());
+            }
+            while(st.ttype != StreamTokenizer.TT_EOL || st.ttype != StreamTokenizer.TT_EOL){/*Ignore everything until EOL or EOF*/
+                st.nextToken();
+            }
+        }
         
-        g.addMOS(pmos, "A", "OUT", "VDD");
-        g.addMOS(pmos, "B", "OUT", "VDD");
-        g.addMOS(nmos, "A", "OUT", "INT");
-        g.addMOS(nmos, "B", "INT", "GND");
-        g.addInput("A");
-        g.addInput("B");
-        g.addOutput("OUT");
+        return gate;
+    }
+    
+    public static void main(String args[]) throws IOException{
+        Gate g = Gate.loadFile("NAND.gate");
         
         System.out.println(g.toString());
         
-        g.updateLogic(Logic.HIGH, Logic.LOW);
+        g.updateLogic(Logic.HIGH, Logic.HIGH);
         g.printLogic();
         System.out.println("Leakage: " + g.sumLeakage(1.2));
     }
