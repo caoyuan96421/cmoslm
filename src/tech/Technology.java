@@ -19,9 +19,17 @@ public abstract class Technology {
         this.T = T;
     }
     
+    public double Vth(){
+        return this.T/300.0*0.026;
+    }
+    
     public abstract double Id_N(double vgs, double vds, MOSFET mos);
     public abstract double Id_P(double vgs, double vds, MOSFET mos);
     
+    @Override
+    public String toString(){
+        return "";
+    }
     /**90 nm Technology at room temperature*/
     public static final Technology Tech_GPDK90 = new TechGPDK90(300);
 }

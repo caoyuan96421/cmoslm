@@ -187,6 +187,24 @@ public class Gate {
         return false;
     }
     
+    public double sumLeakage(double vdd){
+        double sum=0;
+        for(Device device : devices){
+            if(device instanceof MOSDevice){
+                MOSDevice mos = (MOSDevice) device;
+                if(mos.D.logic != Logic.UNKNOWN && mos.S.logic != Logic.UNKNOWN && mos.D.logic != mos.S.logic){
+                    /*Calculate leak thru the MOSFET*/
+                    double leakage = mos.model.Id_leak(0, vdd);
+                    sum += leakage;
+                }
+            }
+            else{
+                throw new UnsupportedOperationException("Only MOSDevice is supported at this moment.");
+            }
+        }
+        return sum;
+    }
+    
     @Override
     public String toString(){
         String s = "";
@@ -232,8 +250,8 @@ public class Gate {
         
         System.out.println(g.toString());
         
-        g.updateLogic(Logic.LOW, Logic.LOW);
+        g.updateLogic(Logic.HIGH, Logic.LOW);
         g.printLogic();
-        
+        System.out.println("Leakage: " + g.sumLeakage(1.2));
     }
 }

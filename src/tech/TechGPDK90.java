@@ -62,7 +62,7 @@ public class TechGPDK90 extends Technology{
         else{
             id = id0n;
         }
-        id = id * Math.exp((Math.min(vgt,0)/sn + Math.abs(vds)/dn - (mos.l - lmin)/ln) / this.T) * Math.signum(vds);
+        id = id * Math.exp((Math.min(vgt,0)/sn + Math.abs(vds)/dn - (mos.l - lmin)/ln) / this.T) * (1 - Math.exp(-Math.abs(vds)/Vth()))* Math.signum(vds);
         System.out.println("Subthreshold id: " + id);
         if(vgt >= 0){// Lin/Sat/Vel.sat
             double C = kn * mos.w / (mos.l - leffd);
@@ -101,7 +101,7 @@ public class TechGPDK90 extends Technology{
         else{
             id = id0p;
         }
-        id = id * Math.exp((Math.max(vgt,0)/sp + Math.abs(vds)/dp - (mos.l - lmin)/lp) / this.T) * Math.signum(vds);
+        id = id * Math.exp((Math.max(vgt,0)/sp + Math.abs(vds)/dp - (mos.l - lmin)/lp) / this.T) * (1 - Math.exp(-Math.abs(vds)/Vth())) * Math.signum(vds);
         System.out.println("Subthreshold id: " + id);
         if(vgt <= 0){// Lin/Sat/Vel.sat
             double C = kp * mos.w / (mos.l - leffd);
@@ -127,9 +127,14 @@ public class TechGPDK90 extends Technology{
         }
     }
     
+    @Override
+    public String toString(){
+        return "GPDK90";
+    }
+    
     public static void main(String args[]){
-        double vgs = 5;
-        double vds = 1.0;
+        double vgs = -0.5;
+        double vds = 0.1;
         NMOS mos1 = new NMOS(360e-9,130e-9,Technology.Tech_GPDK90);
         System.out.println(mos1.Id_leak(vgs, vds));
         PMOS mos2 = new PMOS(480e-9,100e-9,Technology.Tech_GPDK90);

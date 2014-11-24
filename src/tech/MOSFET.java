@@ -45,4 +45,16 @@ public abstract class MOSFET{
      * @return
      */
     public abstract double Id_leak(double vgs, double vds);
+    
+    public String toString(){
+        if(type == NMOS){
+            return tech.toString() + " NMOS w=" + w + " l=" + l;
+        }
+        else if(type == PMOS){
+            return tech.toString() + " PMOS w=" + w + " l=" + l;
+        }
+        else{
+            return tech.toString();
+        }
+    }
 }
