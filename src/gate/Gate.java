@@ -13,12 +13,14 @@ import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.TreeMap;
+import java.util.stream.IntStream;
 import tech.*;
 /**
  *
@@ -32,8 +34,13 @@ public class Gate {
     List<Node> output_nodes;
     List<Device> devices;
     
+    public int output_table[];
+    public double leakage_table[];
+    
     private Deque<Node> q;
-    private static final int MAX_RETRY= 5;
+    private static final int MAX_RETRY=5;
+    private static final int MAX_INPUTS=16;
+    private static final int MAX_OUTPUTS=32;
     
     public Gate(String name){
         this.name = name;
@@ -71,12 +78,18 @@ public class Gate {
     
     public void addInput(String name){
         Node n = name_to_node(name);
-        input_nodes.add(n);
+        if(input_nodes.size() < MAX_INPUTS)
+            input_nodes.add(n);
+        else
+            throw new UnsupportedOperationException("Too many inputs in gate " + name);
     }
     
     public void addOutput(String name){
         Node n = name_to_node(name);
-        output_nodes.add(n);
+        if(output_nodes.size() < MAX_OUTPUTS)
+            output_nodes.add(n);
+        else
+            throw new UnsupportedOperationException("Too many outputs in gate " + name);
     }
     
     private void reset_all(){
@@ -86,14 +99,14 @@ public class Gate {
         }
     }
     
-    private void init_logic(Logic input[]){
+    private void init_logic(Object input[]){
         q = new ArrayDeque<>();
         nodes.get(0).logic = Logic.LOW;     //GND
         nodes.get(1).logic = Logic.HIGH;    //VDD
         q.addLast(nodes.get(0));
         q.addLast(nodes.get(1));
         for(int i=0;i<input.length;i++){
-            input_nodes.get(i).logic = input[i];
+            input_nodes.get(i).logic = (Logic)input[i];
             q.addLast(input_nodes.get(i));
         }
     }
@@ -202,6 +215,7 @@ public class Gate {
                 if(mos.D.logic != Logic.UNKNOWN && mos.S.logic != Logic.UNKNOWN && mos.D.logic != mos.S.logic){
                     /*Calculate leak thru the MOSFET*/
                     double leakage = mos.model.Id_leak(0, vdd);
+                    System.out.println("Leakage on device 0x" + Integer.toHexString(mos.hashCode()) + ": " + leakage);
                     sum += leakage;
                 }
             }
@@ -210,6 +224,39 @@ public class Gate {
             }
         }
         return sum;
+    }
+    
+    public void calcLeakageTable(double vdd){
+        int l = input_nodes.size();
+        int N = (1 << l);
+        
+        output_table = new int[N];
+        leakage_table = new double[N];
+        for(int input = 0; input < N; input++){
+            List<Logic> list = new ArrayList<>();
+            String.format("%" + l + "s", Integer.toBinaryString(input)).replace(' ', '0').chars().forEach((ch) -> {
+                if(ch == '0')
+                    list.add(Logic.LOW);
+                else
+                    list.add(Logic.HIGH);
+            });
+            System.out.println("Input: " + list);
+            reset_all();
+            init_logic(list.toArray());
+            update_logic();
+            int output = 0;
+            for(Node node : output_nodes){
+                Logic logic = node.logic;
+                if(logic == Logic.UNKNOWN){
+                    throw new UnsupportedOperationException(node.toString() + "has unknown logic.");
+                }
+                output = (output << 1) | (node.logic == Logic.HIGH ? 1 : 0);
+            }
+            output_table[input] = output;
+            leakage_table[input] = sumLeakage(vdd);
+            System.out.println("Output: " + String.format("%" + output_nodes.size() + "s", Integer.toBinaryString(output)).replace(' ', '0'));
+            System.out.println("Leakage: " + leakage_table[input]);
+        }
     }
     
     @Override
@@ -248,6 +295,7 @@ public class Gate {
         Map<String, MOSFET> model_map = new TreeMap<>();
         Gate gate = new Gate(file.getName().substring(0,file.getName().lastIndexOf('.')));
         st.commentChar('#');/*Comment by '#'*/
+        st.wordChars('_','_');
         st.lowerCaseMode(false);/*Case sensitive*/
         st.eolIsSignificant(true);
         while(st.ttype != StreamTokenizer.TT_EOF){
@@ -343,7 +391,7 @@ public class Gate {
                 default:
                     throw new UnsupportedOperationException("Unknown command at line " + st.lineno());
             }
-            while(st.ttype != StreamTokenizer.TT_EOL || st.ttype != StreamTokenizer.TT_EOL){/*Ignore everything until EOL or EOF*/
+            while(st.ttype != StreamTokenizer.TT_EOL && st.ttype != StreamTokenizer.TT_EOF){/*Ignore everything until EOL or EOF*/
                 st.nextToken();
             }
         }
@@ -356,8 +404,9 @@ public class Gate {
         
         System.out.println(g.toString());
         
-        g.updateLogic(Logic.HIGH, Logic.HIGH);
+        /*g.updateLogic(Logic.LOW, Logic.LOW);
         g.printLogic();
-        System.out.println("Leakage: " + g.sumLeakage(1.2));
+        System.out.println("Leakage: " + g.sumLeakage(1.2));*/
+        g.calcLeakageTable(1.2);
     }
 }

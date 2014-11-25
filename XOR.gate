@@ -1,0 +1,16 @@
+# Transmission XOR gate
+model nmos 240 100 ntype
+model pmos 480 100 ptype
+# Devices
+device nmos B_ A OUT
+device pmos B A OUT
+device nmos B A_ OUT
+device pmos B_ A_ OUT
+device nmos B B_ GND
+device pmos B B_ VDD
+device nmos A A_ GND
+device pmos A A_ VDD
+# Input and Outputs
+input A
+input B
+output OUT

@@ -63,7 +63,7 @@ public class TechGPDK90 extends Technology{
             id = id0n;
         }
         id = id * Math.exp((Math.min(vgt,0)/sn + Math.abs(vds)/dn - (mos.l - lmin)/ln) / this.T) * (1 - Math.exp(-Math.abs(vds)/Vth()))* Math.signum(vds);
-        System.out.println("Subthreshold id: " + id);
+        //System.out.println("Subthreshold id: " + id);
         if(vgt >= 0){// Lin/Sat/Vel.sat
             double C = kn * mos.w / (mos.l - leffd);
             if(vgt <= Math.abs(vds) && vgt <= Vdsatn){
@@ -102,7 +102,7 @@ public class TechGPDK90 extends Technology{
             id = id0p;
         }
         id = id * Math.exp((Math.max(vgt,0)/sp + Math.abs(vds)/dp - (mos.l - lmin)/lp) / this.T) * (1 - Math.exp(-Math.abs(vds)/Vth())) * Math.signum(vds);
-        System.out.println("Subthreshold id: " + id);
+        //System.out.println("Subthreshold id: " + id);
         if(vgt <= 0){// Lin/Sat/Vel.sat
             double C = kp * mos.w / (mos.l - leffd);
             if(vgt >= -Math.abs(vds) && vgt >= Vdsatp){
