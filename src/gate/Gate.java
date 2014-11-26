@@ -234,7 +234,7 @@ public class Gate {
         leakage_table = new double[N];
         for(int input = 0; input < N; input++){
             List<Logic> list = new ArrayList<>();
-            String.format("%" + l + "s", Integer.toBinaryString(input)).replace(' ', '0').chars().forEach((ch) -> {
+            String.format("%" + l + "s", Integer.toBinaryString(input)).replace(' ', '0').chars().forEachOrdered((ch) -> {
                 if(ch == '0')
                     list.add(Logic.LOW);
                 else
@@ -286,6 +286,41 @@ public class Gate {
     public void printLogic(){
         for(Node n: nodes){
             System.out.println(n.toString() + " " + n.logic.toString());
+        }
+    }
+    
+    public void printTable(){
+        if(output_table == null || leakage_table == null){
+            System.err.println(name + ": table not calculated yet.");
+            return;
+        }
+        List<String> input_names = new ArrayList();
+        List<String> output_names = new ArrayList();
+        input_nodes.stream().forEachOrdered(node -> {
+            input_names.add(node.alias);
+        });
+        output_nodes.stream().forEachOrdered(node -> {
+            output_names.add(node.alias);
+        });
+        
+        for(int i=0;i<output_table.length;i++){
+            List<Logic> input_list = new ArrayList<>();
+            String.format("%" + input_nodes.size() + "s", Integer.toBinaryString(i)).replace(' ', '0').chars().forEachOrdered((ch) -> {
+                if(ch == '0')
+                    input_list.add(Logic.LOW);
+                else
+                    input_list.add(Logic.HIGH);
+            });
+            
+            List<Logic> output_list = new ArrayList<>();
+            String.format("%" + output_nodes.size() + "s", Integer.toBinaryString(output_table[i])).replace(' ', '0').chars().forEachOrdered((ch) -> {
+                if(ch == '0')
+                    output_list.add(Logic.LOW);
+                else
+                    output_list.add(Logic.HIGH);
+            });
+            System.out.println(input_names + " -> " + input_list + ": " + output_names + " = " + output_list + ", leak=" + leakage_table[i]);
+            
         }
     }
     
@@ -400,7 +435,7 @@ public class Gate {
     }
     
     public static void main(String args[]) throws IOException{
-        Gate g = Gate.loadFile("NAND.gate");
+        Gate g = Gate.loadFile("FA.gate");
         
         System.out.println(g.toString());
         
@@ -408,5 +443,6 @@ public class Gate {
         g.printLogic();
         System.out.println("Leakage: " + g.sumLeakage(1.2));*/
         g.calcLeakageTable(1.2);
+        g.printTable();
     }
 }
