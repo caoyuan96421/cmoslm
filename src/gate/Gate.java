@@ -347,10 +347,19 @@ public class Gate extends Module{
     }
 
     @Override
-    public int evaluateOutput(int input) {
-        last_leakage = leakage_table[input];
-        System.out.println(name + ": leak: " + last_leakage);
-        return output_table[input];
+    public Logic[] evaluateOutput(Logic[] input) {
+        int index = 0;
+        for(int i=0;i<input.length;i++)
+            index = index << 1 | (input[i] == Logic.HIGH ? 1 : 0);
+        last_leakage = leakage_table[index];
+        //System.out.println(name + ": leak: " + last_leakage);
+        int out = output_table[index];
+        Logic []output = new Logic[output_nodes.size()];
+        for(int i=output.length-1;i>=0;i--){
+            output[i] = (out & 1) != 0 ? Logic.HIGH : Logic.LOW ;
+            out >>= 1;
+        }
+        return output;
     }
     
 }

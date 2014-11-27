@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import circuit.Circuit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  *
  * @author caoyuan9642
@@ -156,7 +158,7 @@ public abstract class Module {
      * @param input
      * @return
      */
-    public abstract int evaluateOutput(int input);
+    public abstract Logic[] evaluateOutput(Logic []input);
     public double collectLeakage(){
         return last_leakage;
     }

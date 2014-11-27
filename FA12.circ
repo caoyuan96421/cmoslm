@@ -1,0 +1,19 @@
+# FA16.circ
+vdd 1.2
+include fa FA.circ
+
+input A0 A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 B0 B1 B2 B3 B4 B5 B6 B7 B8 B9 B10 B11 Cin
+output S0 S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 C11
+
+device fa A=A0 B=B0 C=Cin S=S0 Cout=C0
+device fa A=A1 B=B1 C=C0 S=S1 Cout=C1
+device fa A=A2 B=B2 C=C1 S=S2 Cout=C2
+device fa A=A3 B=B3 C=C2 S=S3 Cout=C3
+device fa A=A4 B=B4 C=C3 S=S4 Cout=C4
+device fa A=A5 B=B5 C=C4 S=S5 Cout=C5
+device fa A=A6 B=B6 C=C5 S=S6 Cout=C6
+device fa A=A7 B=B7 C=C6 S=S7 Cout=C7
+device fa A=A8 B=B8 C=C7 S=S8 Cout=C8
+device fa A=A9 B=B9 C=C8 S=S9 Cout=C9
+device fa A=A10 B=B10 C=C9 S=S10 Cout=C10
+device fa A=A11 B=B11 C=C10 S=S11 Cout=C11

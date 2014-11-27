@@ -132,13 +132,13 @@ public class TechGPDK90 extends Technology{
         return "GPDK90";
     }
     
-    public static void main(String args[]){
+    /*public static void main(String args[]){
         double vgs = -0.5;
         double vds = 0.1;
         NMOS mos1 = new NMOS(360e-9,130e-9,Technology.Tech_GPDK90);
         System.out.println(mos1.Id_leak(vgs, vds));
         PMOS mos2 = new PMOS(480e-9,100e-9,Technology.Tech_GPDK90);
         System.out.println(mos2.Id_leak(-vgs, -vds));
-    }    
+    } */   
     
 }

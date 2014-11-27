@@ -81,13 +81,13 @@ public class Circuit extends Module{
     }
     
     @Override
-    public int evaluateOutput(int input) {
+    public Logic[] evaluateOutput(Logic input[]) {
         if(update_order == null)
             find_update_order();
         
         reset();
-        for (int i=input_nodes.size()-1,j=1;i>=0;i--, j<<=1){
-            input_nodes.get(i).logic = ((input & j) != 0) ? Logic.HIGH : Logic.LOW;
+        for (int i=0;i<input.length;i++){
+            input_nodes.get(i).logic = input[i];
         }
         
         update_order.stream().forEachOrdered((mod) -> {
@@ -95,14 +95,13 @@ public class Circuit extends Module{
             last_leakage += mod.module.collectLeakage();
         });
         
-        int output = 0;
-        int l = output_nodes.size();
-        for (int i=0;i<l;i++){
+        Logic output[] = new Logic[output_nodes.size()];
+        for (int i=0;i<output.length;i++){
             Logic logic = output_nodes.get(i).logic;
             if(logic == Logic.UNKNOWN){
                 throw new UnsupportedOperationException(name + ": " + output_nodes.get(i).toString() + "floating");
             }
-            output = output << 1 | (logic == Logic.HIGH ? 1 : 0);
+            output[i] = logic;
         }
         return output;
     }
@@ -190,22 +189,30 @@ public class Circuit extends Module{
                 case "input":
                     /*Adds an input*/
                     String input_name;
-                    if(st.nextToken() != StreamTokenizer.TT_WORD){/*Read model name*/
-                        throw new UnsupportedOperationException("Input format error at line " + st.lineno());
-                    }
-                    input_name = st.sval;
-                    circ.addInput(input_name);
-                    System.out.println(circ.name + ": Add input " + input_name);
+                    st.nextToken();
+                    do{
+                        if(st.ttype != StreamTokenizer.TT_WORD){/*Read model name*/
+                            throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+                        }
+                        input_name = st.sval;
+                        circ.addInput(input_name);
+                        System.out.println(circ.name + ": Add input " + input_name);
+                        st.nextToken();
+                    }while(st.ttype != StreamTokenizer.TT_EOL && st.ttype != StreamTokenizer.TT_EOF);
                     break;
                 case "output":
-                    /*Adds an input*/
+                    /*Adds an output*/
                     String output_name;
-                    if(st.nextToken() != StreamTokenizer.TT_WORD){/*Read model name*/
-                        throw new UnsupportedOperationException("Input format error at line " + st.lineno());
-                    }
-                    output_name = st.sval;
-                    circ.addOutput(output_name);
-                    System.out.println(circ.name + ": Add output " + output_name);
+                    st.nextToken();
+                    do{
+                        if(st.ttype != StreamTokenizer.TT_WORD){/*Read model name*/
+                            throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+                        }
+                        output_name = st.sval;
+                        circ.addOutput(output_name);
+                        System.out.println(circ.name + ": Add output " + output_name);
+                        st.nextToken();
+                    }while(st.ttype != StreamTokenizer.TT_EOL && st.ttype != StreamTokenizer.TT_EOF);
                     break;
                 default:
                     throw new UnsupportedOperationException("Unknown command at line " + st.lineno());
@@ -220,13 +227,26 @@ public class Circuit extends Module{
     
     public static void main(String args[]) throws Exception{
         //Circuit circ = (Circuit) Circuit.loadFile("FA.circ");
-        Gate circ = (Gate) Module.loadFile("FA.gate");
-        circ.calcLeakageTable(1.2);
+        Module circ = Module.loadFile("FA16.circ");
+        if(circ instanceof Gate)
+            ((Gate)circ).calcLeakageTable(1.2);
         System.out.println(circ.toString());
-        circ.evaluateOutput(0x6);
+        for(int i=10000000;i>0;i--){
+            circ.evaluateOutput(new Logic[]{
+                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+                Logic.LOW
+            });
+        }
+        System.out.println(circ.collectLeakage());
         circ.printInput();
         circ.printOutput();
-        System.out.println(circ.collectLeakage());
         /*Gate xor = Gate.loadFile("XOR.gate");
         xor.calcLeakageTable(1.2);
         xor.printTable();

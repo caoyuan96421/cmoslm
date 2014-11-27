@@ -48,14 +48,13 @@ public class ModuleInstance {
     }
     
     public void updateOutput(){
-        int input = 0;
-        for(Node n : inputs){
-            input = input << 1 | (n.logic == Logic.HIGH ? 1 : 0);
+        Logic[] input = new Logic[inputs.length];
+        for(int i=0;i<input.length;i++){
+            input[i] = inputs[i].logic;
         }
-        int output = module.evaluateOutput(input);
-        for(int i=outputs.length-1, j=1;i>=0;i--, j<<=1){
-            outputs[i].logic = ((output & j) != 0 ? Logic.HIGH : Logic.LOW);
-        }
+        Logic[] output = module.evaluateOutput(input);
+        for(int i=0;i<output.length;i++)
+            outputs[i].logic = output[i];
     }
     
     public String toString(){
