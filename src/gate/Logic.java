@@ -5,6 +5,8 @@
  */
 package gate;
 
+import java.util.Random;
+
 /**
  *
  * @author caoyuan9642
@@ -13,4 +15,20 @@ public enum Logic {
     HIGH,
     LOW,
     UNKNOWN;
+
+    private static Random random = new Random();
+    public static Logic random() {
+        if(random.nextBoolean())
+            return Logic.HIGH;
+        else
+            return Logic.LOW;
+    }
+    public Logic invert() {
+        if(this == Logic.HIGH)
+            return Logic.LOW;
+        else if(this == Logic.LOW)
+            return Logic.HIGH;
+        else
+            return Logic.UNKNOWN;
+    }
 }

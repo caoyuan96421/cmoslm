@@ -32,6 +32,8 @@ public class LeakageMinimizer {
         for(int i=0;i<getParallelism();i++){
             /*Complete independent*/
             Module m = Module.loadFile(filename);
+            if(m instanceof Gate)
+                ((Gate)m).calcLeakageTable(1.2);
             this.module[i] = m;
         }
     }
@@ -51,11 +53,14 @@ public class LeakageMinimizer {
     protected Logic[] best_input;
     protected double best_leakage;
     
+    /**
+     * Minimize leakage using class specific method
+     */
     public void minimizeLeakage() {
         int n = module[0].getInputSize();
         BigInteger N = BigInteger.valueOf(2).pow(n);
         if(n > 24){
-            System.err.println("Number of input vectors " + N.toString() +" is very large. Be careful.");
+            throw new UnsupportedOperationException("Number of input vectors " + N.toString() +" is very large. Be careful.");
         }
         best_leakage = Double.MAX_VALUE;
         best_input = null;
@@ -71,9 +76,6 @@ public class LeakageMinimizer {
                 best_leakage = leakage;
                 best_input = input;
             }
-            if(i.remainder(N.divide(BigInteger.valueOf(100))).intValue() == 0){
-                System.out.print("#");
-            }
         }
         System.out.println();
         System.out.println("Best leakage: " + best_leakage);
@@ -81,8 +83,10 @@ public class LeakageMinimizer {
     }
     
     public static void main(String args[]) throws Exception{
-        LeakageMinimizer lm = new ParallelLeakageMinimizer(8);
-        lm.loadModule("FA12.circ");
+        LeakageMinimizer lm = new MonteCarloLeakageMinimizer();
+        //LeakageMinimizer lm = new ParallelLeakageMinimizer(8);
+        //LeakageMinimizer lm = new LeakageMinimizer();
+        lm.loadModule("FA16.circ");
         lm.minimizeLeakage();
     }
 }

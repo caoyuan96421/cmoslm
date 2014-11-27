@@ -50,7 +50,8 @@ public class ParallelLeakageMinimizer extends LeakageMinimizer {
     @Override
     public void minimizeLeakage() {
         int n = module[0].getInputSize();
-        long N = (1 << n);
+        long N = (1L << (long)n);
+        System.out.println(n);
         if(n > 24){
             System.err.println("Number of input vectors " + N +" is very large. Be careful.");
         }
@@ -71,7 +72,7 @@ public class ParallelLeakageMinimizer extends LeakageMinimizer {
                         for(long i = start; i < end; i++){
                             Logic []input = new Logic[n];
                             for(int j=0;j<n;j++){
-                                input[j] = ((i & (1 << (n-j-1))) != 0) ? Logic.HIGH : Logic.LOW;
+                                input[j] = ((i & (1L << (n-j-1))) != 0) ? Logic.HIGH : Logic.LOW;
                             }
                             double leakage = leakage(p, input);
                             synchronized (ParallelLeakageMinimizer.this){
