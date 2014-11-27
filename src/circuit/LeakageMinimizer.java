@@ -16,7 +16,7 @@ public class LeakageMinimizer {
     public Module module[];
     
     public LeakageMinimizer(){
-        module = new Module[getParallelism()];
+        module = new Module[1];
     }
     
     public LeakageMinimizer(Module module){
@@ -48,10 +48,10 @@ public class LeakageMinimizer {
         return module[i].collectLeakage();
     }
     
-    private Logic[] best_input;
-    private double best_leakage;
+    protected Logic[] best_input;
+    protected double best_leakage;
     
-    public void minimizeLeakage(){
+    public void minimizeLeakage() {
         int n = module[0].getInputSize();
         BigInteger N = BigInteger.valueOf(2).pow(n);
         if(n > 24){
@@ -81,7 +81,7 @@ public class LeakageMinimizer {
     }
     
     public static void main(String args[]) throws Exception{
-        LeakageMinimizer lm = new LeakageMinimizer();
+        LeakageMinimizer lm = new ParallelLeakageMinimizer(8);
         lm.loadModule("FA12.circ");
         lm.minimizeLeakage();
     }
