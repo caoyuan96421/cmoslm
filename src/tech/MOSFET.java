@@ -48,10 +48,10 @@ public abstract class MOSFET{
     
     public String toString(){
         if(type == NMOS){
-            return tech.toString() + " NMOS w=" + w + " l=" + l;
+            return tech.toString() + " NMOS w=" + String.format("%.0fnm",w*1e9) + " l=" + String.format("%.0fnm",l*1e9);
         }
         else if(type == PMOS){
-            return tech.toString() + " PMOS w=" + w + " l=" + l;
+            return tech.toString() + " PMOS w=" + String.format("%.0fnm",w*1e9) + " l=" + String.format("%.0fnm",l*1e9);
         }
         else{
             return tech.toString();

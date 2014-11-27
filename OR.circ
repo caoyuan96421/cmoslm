@@ -1,0 +1,10 @@
+# OR
+vdd 1.2
+include nand NAND.gate
+include inv Inverter.gate
+input A
+input B
+output OUT
+device inv A=A Y=A_
+device inv A=B Y=B_
+device nand A=A_ B=B_ OUT=OUT

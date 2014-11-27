@@ -12,13 +12,14 @@ import java.util.List;
 /**
  *
  * @author caoyuan9642
+ * @param <T>
  */
-public class Node {
-    public List<Device> devices;
+public class Node <T> {
+    public List<T> devices;
     public int id;
     public String alias = "";
     
-    Logic logic = Logic.UNKNOWN;
+    public Logic logic = Logic.UNKNOWN;
     int retries = 0;
     
     public static final int GROUND = 0;
@@ -34,18 +35,19 @@ public class Node {
         this.alias = alias;
     }
     
-    public void addDevice(Device d){
+    public void addDevice(T d){
         devices.add(d);
     }
     
+    @Override
     public String toString(){
         return "node " + alias + " (" + id + ")";
     }
     
     public void printDevices(){
         System.out.println("Node " + alias + " (" + id + ")");
-        for(Iterator<Device> it=devices.iterator();it.hasNext();){
-            System.out.println(" -" + it.next().toString());
-        }
+        devices.stream().forEachOrdered((device) -> {
+            System.out.println(" -" + device.toString());
+        });
     }
 }

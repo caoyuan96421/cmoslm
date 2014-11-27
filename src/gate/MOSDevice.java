@@ -13,8 +13,8 @@ public class MOSDevice extends Device{
     public MOSFET model;
     public Node G, D, S;
 
-    public MOSDevice(Gate gate, MOSFET model, Node G, Node D, Node S) {
-        super(gate, G, D, S);
+    public MOSDevice(MOSFET model, Node G, Node D, Node S) {
+        super(G, D, S);
         this.model = model;
         this.G = G;
         this.D = D;
@@ -22,6 +22,6 @@ public class MOSDevice extends Device{
     }
     
     public String toString(){
-        return " 0x" + Integer.toHexString(this.hashCode()) + " " + model.toString() + " G: " + G.toString() + " D: " + D.toString() + " S: " + S.toString();
+        return String.format("0x%08x",hashCode()) + " " + model.toString() + " G: " + G.toString() + " D: " + D.toString() + " S: " + S.toString();
     }
 }

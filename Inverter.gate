@@ -1,0 +1,7 @@
+# CMOS Inverter
+model nmos 240 100 ntype
+model pmos 480 100 ptype
+input A
+output Y
+device pmos A Y VDD
+device nmos A Y GND

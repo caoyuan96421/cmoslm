@@ -1,0 +1,15 @@
+# FA
+vdd 1.2
+include or OR.circ
+include and AND.circ
+include xor XOR.gate
+input A
+input B
+input C
+output S
+output Cout
+device xor A=A B=B OUT=P
+device xor A=P B=C OUT=S
+device and A=A B=B OUT=G
+device and A=C B=P OUT=D
+device or A=D B=G OUT=Cout

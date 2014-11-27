@@ -11,10 +11,7 @@ package gate;
  */
 public class Device {
     
-    public Gate gate;
-    
-    public Device(Gate gate, Node ... nodes){
-        this.gate = gate;
+    public Device(Node ... nodes){
         for (Node n : nodes){
             n.addDevice(this);
         }

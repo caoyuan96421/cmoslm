@@ -26,83 +26,36 @@ import tech.*;
  *
  * @author caoyuan9642
  */
-public class Gate {
-    public String name;
-    Map<String, Integer> node_map;
-    List<Node> nodes;
-    List<Node> input_nodes;
-    List<Node> output_nodes;
-    List<Device> devices;
+public class Gate extends Module{
     
     public int output_table[];
     public double leakage_table[];
     
     private Deque<Node> q;
     private static final int MAX_RETRY=5;
-    private static final int MAX_INPUTS=16;
-    private static final int MAX_OUTPUTS=32;
     
     public Gate(String name){
-        this.name = name;
-        node_map = new TreeMap<>();
-        nodes = new ArrayList<>();
-        input_nodes = new ArrayList<>();
-        output_nodes = new ArrayList<>();
-        devices = new ArrayList<>();
-        
-        node_map.put("GND", 0);
-        node_map.put("VDD", 1);
-        nodes.add(new Node(0, "GND"));
-        nodes.add(new Node(1, "VDD"));
-    }
-    
-    public static final int INTERNAL=0;
-    public static final int INPUT=1;
-    public static final int OUTPUT=2;
-    
-    private Node name_to_node(String name){
-        if(!node_map.containsKey(name)){
-            node_map.put(name, nodes.size());
-            nodes.add(new Node(nodes.size(), name));
-        }
-        return nodes.get(node_map.get(name));
+        super(name);
     }
     
     public void addMOS(MOSFET model, String g_name, String d_name, String s_name){
         Node g = name_to_node(g_name);
         Node d = name_to_node(d_name);
         Node s = name_to_node(s_name);
-        MOSDevice dev = new MOSDevice(this, model, g, d, s);
+        MOSDevice dev = new MOSDevice(model, g, d, s);
         devices.add(dev);
     }
     
-    public void addInput(String name){
-        Node n = name_to_node(name);
-        if(input_nodes.size() < MAX_INPUTS)
-            input_nodes.add(n);
-        else
-            throw new UnsupportedOperationException("Too many inputs in gate " + name);
+    protected int getMaxInputs(){
+        return 16;
     }
     
-    public void addOutput(String name){
-        Node n = name_to_node(name);
-        if(output_nodes.size() < MAX_OUTPUTS)
-            output_nodes.add(n);
-        else
-            throw new UnsupportedOperationException("Too many outputs in gate " + name);
-    }
-    
-    private void reset_all(){
-        for (Node n : nodes) {
-            n.logic = Logic.UNKNOWN;
-            n.retries = 0;
-        }
+    protected int getMaxOutputs(){
+        return 8;
     }
     
     private void init_logic(Object input[]){
         q = new ArrayDeque<>();
-        nodes.get(0).logic = Logic.LOW;     //GND
-        nodes.get(1).logic = Logic.HIGH;    //VDD
         q.addLast(nodes.get(0));
         q.addLast(nodes.get(1));
         for(int i=0;i<input.length;i++){
@@ -116,7 +69,7 @@ public class Gate {
             Node node = q.pollFirst();
             System.out.println("Updating: " + node.toString());
             boolean retry = false;
-            for (Device device : node.devices) {
+            for (Device device : (List<Device>)node.devices) {
                 if(device instanceof MOSDevice){
                     MOSDevice mos = (MOSDevice) device;
                     if(node == mos.G){
@@ -196,20 +149,9 @@ public class Gate {
         }
     }
     
-    public boolean updateLogic(Logic ... logic){
-        reset_all();
-        init_logic(logic);
-        try{
-            update_logic();
-        }catch(Exception e){
-            return true;
-        }
-        return false;
-    }
-    
-    public double sumLeakage(double vdd){
+    private double sum_leakage(double vdd){
         double sum=0;
-        for(Device device : devices){
+        for(Object device : devices){
             if(device instanceof MOSDevice){
                 MOSDevice mos = (MOSDevice) device;
                 if(mos.D.logic != Logic.UNKNOWN && mos.S.logic != Logic.UNKNOWN && mos.D.logic != mos.S.logic){
@@ -241,7 +183,7 @@ public class Gate {
                     list.add(Logic.HIGH);
             });
             System.out.println("Input: " + list);
-            reset_all();
+            reset();
             init_logic(list.toArray());
             update_logic();
             int output = 0;
@@ -253,39 +195,9 @@ public class Gate {
                 output = (output << 1) | (node.logic == Logic.HIGH ? 1 : 0);
             }
             output_table[input] = output;
-            leakage_table[input] = sumLeakage(vdd);
+            leakage_table[input] = sum_leakage(vdd);
             System.out.println("Output: " + String.format("%" + output_nodes.size() + "s", Integer.toBinaryString(output)).replace(' ', '0'));
             System.out.println("Leakage: " + leakage_table[input]);
-        }
-    }
-    
-    @Override
-    public String toString(){
-        String s = "";
-        s += "Gate: " + name + "\n";
-        s += "Nodes: \n";
-        for(Iterator<Node> it = nodes.iterator();it.hasNext();){
-            s += " - " + it.next().toString() + "\n";
-        }
-        s += "Input Nodes: \n";
-        for(Iterator<Node> it = input_nodes.iterator();it.hasNext();){
-            s += " - " + it.next().toString() + "\n";
-        }
-        s += "Output Nodes: \n";
-        for(Iterator<Node> it = output_nodes.iterator();it.hasNext();){
-            s += " - " + it.next().toString() + "\n";
-        }
-        
-        s += "Devices: \n";
-        for(Iterator<Device> it = devices.iterator();it.hasNext();){
-            s += " - " + it.next().toString() + "\n";
-        }
-        return s;
-    }
-    
-    public void printLogic(){
-        for(Node n: nodes){
-            System.out.println(n.toString() + " " + n.logic.toString());
         }
     }
     
@@ -324,7 +236,7 @@ public class Gate {
         }
     }
     
-    public static Gate loadFile(String filename) throws FileNotFoundException, IOException{
+    public static Module loadFile(String filename) throws Exception{
         File file = new File(filename);
         StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(new FileInputStream(file))));
         Map<String, MOSFET> model_map = new TreeMap<>();
@@ -433,16 +345,12 @@ public class Gate {
         
         return gate;
     }
-    
-    public static void main(String args[]) throws IOException{
-        Gate g = Gate.loadFile("FA.gate");
-        
-        System.out.println(g.toString());
-        
-        /*g.updateLogic(Logic.LOW, Logic.LOW);
-        g.printLogic();
-        System.out.println("Leakage: " + g.sumLeakage(1.2));*/
-        g.calcLeakageTable(1.2);
-        g.printTable();
+
+    @Override
+    public int evaluateOutput(int input) {
+        last_leakage = leakage_table[input];
+        System.out.println(name + ": leak: " + last_leakage);
+        return output_table[input];
     }
+    
 }
