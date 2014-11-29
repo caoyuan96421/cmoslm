@@ -37,6 +37,11 @@ public class NMOS extends MOSFET{
     public double Id_leak(double vgs, double vds) {
         return tech.Id_N(vgs, vds, this);
     }
+
+    @Override
+    public double getVT(double vsb) {
+        return tech.VT_N(vsb);
+    }
     
     
 }

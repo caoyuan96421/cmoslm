@@ -38,5 +38,9 @@ public class PMOS extends MOSFET{
         return tech.Id_P(vgs, vds, this);
     }
     
+    @Override
+    public double getVT(double vsb) {
+        return tech.VT_P(vsb);
+    }
     
 }

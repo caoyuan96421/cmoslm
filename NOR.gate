@@ -1,0 +1,15 @@
+# NOR gate
+# CMOS logic
+# Input and Output definition
+input A
+input B
+output OUT
+# Model definition
+model nmos 240 100 ntype
+model pmos 480 100 ptype
+# Device definition
+device nmos A OUT GND
+device nmos B OUT GND
+device pmos A OUT INT
+device pmos B INT VDD
+# End of gate definition

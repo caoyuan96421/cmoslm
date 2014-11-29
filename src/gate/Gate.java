@@ -7,20 +7,14 @@ package gate;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.TreeMap;
-import java.util.stream.IntStream;
 import tech.*;
 /**
  *
@@ -31,11 +25,20 @@ public class Gate extends Module{
     public int output_table[];
     public double leakage_table[];
     
-    private Deque<Node> q;
-    private static final int MAX_RETRY=5;
+    protected Deque<Node> q;
+    protected static final int MAX_RETRY=5;
     
     public Gate(String name){
         super(name);
+    }
+    
+    @Override
+    public void setVDD(double vdd){
+        if(this.vdd != vdd){
+            super.setVDD(vdd);
+            this.calcLeakageTable();
+            this.printTable();
+        }
     }
     
     public void addMOS(MOSFET model, String g_name, String d_name, String s_name){
@@ -54,7 +57,7 @@ public class Gate extends Module{
         return 8;
     }
     
-    private void init_logic(Object input[]){
+    protected void init_logic(Object input[]){
         q = new ArrayDeque<>();
         q.addLast(nodes.get(0));
         q.addLast(nodes.get(1));
@@ -64,10 +67,10 @@ public class Gate extends Module{
         }
     }
     
-    private void update_logic(){
+    protected void update_logic(){
         while(!q.isEmpty()){
             Node node = q.pollFirst();
-            System.out.println("Updating: " + node.toString());
+            //System.out.println("Updating: " + node.toString());
             boolean retry = false;
             for (Device device : (List<Device>)node.devices) {
                 if(device instanceof MOSDevice){
@@ -88,7 +91,7 @@ public class Gate extends Module{
                                         continue;
                                     }
                                 }
-                                System.out.println(" - " + mos.toString());
+                                //System.out.println(" - " + mos.toString());
                                 if(node == mos.D){
                                     mos.S.logic = node.logic;
                                     q.addLast(mos.S);
@@ -104,7 +107,7 @@ public class Gate extends Module{
                                 if(node.retries > MAX_RETRY){
                                     throw new UnsupportedOperationException("Floating gate detected. Unsupported yet.");
                                 }
-                                System.out.println("Updating " + node.toString() + " postponed.");
+                                //System.out.println("Updating " + node.toString() + " postponed.");
                                 retry = true;
                             }
                             break;
@@ -118,7 +121,7 @@ public class Gate extends Module{
                                         continue;
                                     }
                                 }
-                                System.out.println(" - " + mos.toString());
+                                //System.out.println(" - " + mos.toString());
                                 if(node == mos.D){
                                     mos.S.logic = node.logic;
                                     q.addLast(mos.S);
@@ -149,15 +152,18 @@ public class Gate extends Module{
         }
     }
     
-    private double sum_leakage(double vdd){
+    protected double sum_leakage(){
         double sum=0;
+        if(vdd == 0){
+            throw new UnsupportedOperationException(name + ": VDD not set");
+        }
         for(Object device : devices){
             if(device instanceof MOSDevice){
                 MOSDevice mos = (MOSDevice) device;
                 if(mos.D.logic != Logic.UNKNOWN && mos.S.logic != Logic.UNKNOWN && mos.D.logic != mos.S.logic){
                     /*Calculate leak thru the MOSFET*/
                     double leakage = mos.model.Id_leak(0, vdd);
-                    System.out.println("Leakage on device 0x" + Integer.toHexString(mos.hashCode()) + ": " + leakage);
+                    System.out.println("Leakage on device 0x" + Integer.toHexString(mos.hashCode()) + " G " + mos.G.toString() + " D " + mos.D.toString() + " S " + mos.S.toString() + " : " + leakage);
                     sum += leakage;
                 }
             }
@@ -168,7 +174,7 @@ public class Gate extends Module{
         return sum;
     }
     
-    public void calcLeakageTable(double vdd){
+    public void calcLeakageTable(){
         int l = input_nodes.size();
         int N = (1 << l);
         
@@ -190,12 +196,12 @@ public class Gate extends Module{
             for(Node node : output_nodes){
                 Logic logic = node.logic;
                 if(logic == Logic.UNKNOWN){
-                    throw new UnsupportedOperationException(node.toString() + "has unknown logic.");
+                    throw new UnsupportedOperationException(name + node.toString() + " has unknown logic.");
                 }
                 output = (output << 1) | (node.logic == Logic.HIGH ? 1 : 0);
             }
             output_table[input] = output;
-            leakage_table[input] = sum_leakage(vdd);
+            leakage_table[input] = sum_leakage();
             System.out.println("Output: " + String.format("%" + output_nodes.size() + "s", Integer.toBinaryString(output)).replace(' ', '0'));
             System.out.println("Leakage: " + leakage_table[input]);
         }
@@ -206,6 +212,7 @@ public class Gate extends Module{
             System.err.println(name + ": table not calculated yet.");
             return;
         }
+        System.out.println(name + " : Leakage table at VDD="+vdd +"V");
         List<String> input_names = new ArrayList();
         List<String> output_names = new ArrayList();
         input_nodes.stream().forEachOrdered(node -> {
@@ -240,19 +247,32 @@ public class Gate extends Module{
         File file = new File(filename);
         StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(new FileInputStream(file))));
         Map<String, MOSFET> model_map = new TreeMap<>();
-        Gate gate = new Gate(file.getName().substring(0,file.getName().lastIndexOf('.')));
         st.commentChar('#');/*Comment by '#'*/
         st.wordChars('_','_');
         st.lowerCaseMode(false);/*Case sensitive*/
         st.eolIsSignificant(true);
-        while(st.ttype != StreamTokenizer.TT_EOF){
+        Gate gate;
+        do{
             st.nextToken();
-            if(st.ttype == StreamTokenizer.TT_EOF){
-                break;
-            }
-            if(st.ttype == StreamTokenizer.TT_EOL){
-                continue;
-            }
+        }while(st.ttype != StreamTokenizer.TT_EOF && st.ttype != StreamTokenizer.TT_WORD);
+        if(st.ttype != StreamTokenizer.TT_WORD){
+            throw new UnsupportedOperationException("Input format error at line " + st.lineno());
+        }
+        if(st.sval.equals("realistic")){
+            gate = new RealisticGate(file.getName().substring(0,file.getName().lastIndexOf('.')));
+            System.out.println(gate.name + ": Realistic model is used");
+            do{
+                st.nextToken();
+            }while(st.ttype != StreamTokenizer.TT_WORD);
+        }
+        else if(st.sval.equals("table")){
+            /*Hand over to TableGate*/
+            return TableGate.loadFile(filename);
+        }
+        else{
+            gate = new Gate(file.getName().substring(0,file.getName().lastIndexOf('.')));
+        }
+        do{
             if(st.ttype != StreamTokenizer.TT_WORD){/*Read command token in a line*/
                 throw new UnsupportedOperationException("Input format error at line " + st.lineno());
             }
@@ -341,7 +361,13 @@ public class Gate extends Module{
             while(st.ttype != StreamTokenizer.TT_EOL && st.ttype != StreamTokenizer.TT_EOF){/*Ignore everything until EOL or EOF*/
                 st.nextToken();
             }
-        }
+            while(st.ttype != StreamTokenizer.TT_EOF && st.ttype == StreamTokenizer.TT_EOL){
+                st.nextToken();
+            }
+            if(st.ttype == StreamTokenizer.TT_EOF){
+                break;
+            }
+        }while(true);
         
         return gate;
     }
@@ -349,8 +375,9 @@ public class Gate extends Module{
     @Override
     public Logic[] evaluateOutput(Logic[] input) {
         int index = 0;
-        for(int i=0;i<input.length;i++)
-            index = index << 1 | (input[i] == Logic.HIGH ? 1 : 0);
+        for (Logic input1 : input) {
+            index = index << 1 | (input1 == Logic.HIGH ? 1 : 0);
+        }
         last_leakage = leakage_table[index];
         //System.out.println(name + ": leak: " + last_leakage);
         int out = output_table[index];

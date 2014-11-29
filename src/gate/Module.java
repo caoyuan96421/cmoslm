@@ -19,7 +19,8 @@ import java.util.logging.Logger;
  * @author caoyuan9642
  */
 public abstract class Module {
-    public String name;
+    public final String name;
+    public double vdd;
     protected Map<String, Integer> node_map;
     protected List<Node> nodes;
     protected List<Node> input_nodes;
@@ -29,6 +30,7 @@ public abstract class Module {
         
     public Module(String name){
         this.name = name;
+        this.vdd = 0;
         node_map = new TreeMap<>();
         nodes = new ArrayList<>();
         input_nodes = new ArrayList<>();
@@ -39,6 +41,15 @@ public abstract class Module {
         node_map.put("VDD", 1);
         nodes.add(new Node(0, "GND"));
         nodes.add(new Node(1, "VDD"));
+    }
+    
+    public Module(String name, double vdd){
+        this(name);
+        this.vdd = vdd;
+    }
+    
+    public void setVDD(double vdd){
+        this.vdd = vdd;
     }
     
     protected Node name_to_node(String name){
@@ -68,10 +79,13 @@ public abstract class Module {
     public void reset(){
         nodes.stream().forEach((n) -> {
             n.logic = Logic.UNKNOWN;
+            n.voltage = Double.NaN;
             n.retries = 0;
         });
         nodes.get(0).logic = Logic.LOW;     //GND
+        nodes.get(0).voltage = 0;
         nodes.get(1).logic = Logic.HIGH;    //VDD
+        nodes.get(1).voltage = vdd;
         
         last_leakage = 0;
     }
@@ -112,18 +126,20 @@ public abstract class Module {
     public String toString(){
         String s = "", s1 = "";
         s += getClass().getSimpleName() + ": " + name + "\n";
+        s += "VDD: " + vdd + "\n";
         s += "Nodes: \n";
         s = nodes.stream().map((node) -> " - " + node.toString() + "\n").reduce(s, String::concat);
         s += "Input Nodes: \n";
         s = input_nodes.stream().map((node) -> " - " + node.toString() + "\n").reduce(s, String::concat);
         s += "Output Nodes: \n";
         s = output_nodes.stream().map((node) -> " - " + node.toString() + "\n").reduce(s, String::concat);
-        
-        s += "Devices: \n";
-        s1 = devices.stream().map((device) -> device.toString() + "\n").reduce(s1, String::concat);
-        s1 = s1.replaceAll("\n", "\n\t");
-        s1 = "\t" + s1.substring(0,s1.length()-1);
-        s += s1;
+        if(!devices.isEmpty()){
+            s += "Devices: \n";
+            s1 = devices.stream().map((device) -> device.toString() + "\n").reduce(s1, String::concat);
+            s1 = s1.replaceAll("\n", "\n\t");
+            s1 = "\t" + s1.substring(0,s1.length()-1);
+            s += s1;
+        }
         return s;
     }
     

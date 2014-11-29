@@ -1,0 +1,7 @@
+# HA.circ
+include xor XOR.gate
+include and AND.circ
+input A B
+output S C
+device xor A=A B=B OUT=S
+device and A=A B=B OUT=C

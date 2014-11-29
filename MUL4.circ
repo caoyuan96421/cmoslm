@@ -1,0 +1,43 @@
+# Multiplier 4x4
+vdd 1.0
+include ha HA.circ
+include fa FA.gate
+include and AND.circ
+input A3 A2 A1 A0
+input B3 B2 B1 B0
+output S7 S6 S5 S4 S3 S2 S1 S0
+
+device and A=A0 B=B0 OUT=S0
+device and A=A0 B=B1 OUT=a0b1
+device and A=A0 B=B2 OUT=a0b2
+device and A=A0 B=B3 OUT=a0b3
+device and A=A1 B=B0 OUT=a1b0
+device and A=A1 B=B1 OUT=a1b1
+device and A=A1 B=B2 OUT=a1b2
+device and A=A1 B=B3 OUT=a1b3
+device and A=A2 B=B0 OUT=a2b0
+device and A=A2 B=B1 OUT=a2b1
+device and A=A2 B=B2 OUT=a2b2
+device and A=A2 B=B3 OUT=a2b3
+device and A=A3 B=B0 OUT=a3b0
+device and A=A3 B=B1 OUT=a3b1
+device and A=A3 B=B2 OUT=a3b2
+device and A=A3 B=B3 OUT=a3b3
+
+device ha A=a0b1 B=a1b0 S=S1 C=c10
+
+device fa A=a0b2 B=a1b1 C=c10 S=s20 Cout=c20
+device ha A=s20 B=a2b0 S=S2 C=c21
+
+device fa A=a0b3 B=a1b2 C=c20 S=s30 Cout=c30
+device fa A=s30 B=a2b1 C=c21 S=s31 Cout=c31
+device ha A=s31 B=a3b0 S=S3 C=c32
+
+device ha A=a1b3 B=c30 S=s40 C=c40
+device fa A=s40 B=a2b2 C=c31 S=s41 Cout=c41
+device fa A=s41 B=a3b1 C=c32 S=S4 Cout=c42
+
+device fa A=a2b3 B=c40 C=c41 S=s51 Cout=c51
+device fa A=s51 B=a3b2 C=c42 S=S5 Cout=c52
+
+device fa A=a3b3 B=c51 C=c52 S=S6 Cout=S7

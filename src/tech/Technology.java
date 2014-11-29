@@ -25,6 +25,9 @@ public abstract class Technology {
     
     public abstract double Id_N(double vgs, double vds, MOSFET mos);
     public abstract double Id_P(double vgs, double vds, MOSFET mos);
+    public abstract double VT_N(double vsb);
+    public abstract double VT_P(double vsb);
+    public abstract double VT0();
     
     @Override
     public String toString(){

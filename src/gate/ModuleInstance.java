@@ -57,6 +57,10 @@ public class ModuleInstance {
             outputs[i].logic = output[i];
     }
     
+    public void setVDD(double vdd){
+        module.setVDD(vdd);
+    }
+    
     public String toString(){
         String s = module.toString();
         s += "Binding: ";

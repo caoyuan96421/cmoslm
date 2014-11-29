@@ -45,6 +45,11 @@ public abstract class MOSFET{
      * @return
      */
     public abstract double Id_leak(double vgs, double vds);
+    public abstract double getVT(double vsb);
+    
+    public double getVT0(){
+        return tech.VT0() * (type == NMOS ? 1 : -1);
+    }
     
     public String toString(){
         if(type == NMOS){

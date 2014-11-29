@@ -1,5 +1,4 @@
 # FA
-vdd 1.2
 include or OR.circ
 include and AND.circ
 include xor XOR.gate

@@ -42,6 +42,11 @@ public class TechGPDK90 extends Technology{
     private static final double ln = 11.4e-9/Math.log(2)/300;
     private static final double lp = 16e-9/Math.log(2)/300;
     
+    private static final double gn = 0.1;
+    private static final double gp = -0.15;
+    private static final double phn = 0.6;
+    private static final double php = -0.6;
+    
     static final double wmin = 120e-9;
     static final double lmin = 100e-9;
     
@@ -140,5 +145,20 @@ public class TechGPDK90 extends Technology{
         PMOS mos2 = new PMOS(480e-9,100e-9,Technology.Tech_GPDK90);
         System.out.println(mos2.Id_leak(-vgs, -vds));
     } */   
+
+    @Override
+    public double VT_N(double vsb) {
+        return vt + gn * (Math.sqrt(Math.abs(vsb + phn)) - Math.sqrt(Math.abs(phn)));
+    }
+
+    @Override
+    public double VT_P(double vsb) {
+        return -vt + gp * (Math.sqrt(Math.abs(vsb + php)) - Math.sqrt(Math.abs(php)));
+    }
+
+    @Override
+    public double VT0() {
+        return vt;
+    }
     
 }

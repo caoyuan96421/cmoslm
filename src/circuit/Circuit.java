@@ -38,6 +38,18 @@ public class Circuit extends Module{
         super(name);
     }
     
+    public Circuit(String name, double vdd){
+        super(name, vdd);
+    }
+    
+    @Override
+    public void setVDD(double vdd){
+        super.setVDD(vdd);
+        for(Object module : devices){
+            ((ModuleInstance)module).setVDD(vdd);
+        }
+    }
+    
     public void addModule(Module m, List<String> ports, List<String> nodes){
         if(ports.size() != nodes.size() || ports.size() != m.getInputSize() + m.getOutputSize()){
             System.err.println(name + ": input or output size mismatch in " + m.name);
@@ -116,7 +128,7 @@ public class Circuit extends Module{
         st.wordChars('=','=');
         st.lowerCaseMode(false);/*Case sensitive*/
         st.eolIsSignificant(true);
-        double vdd = -1;
+        double vdd = 0;
         while(st.ttype != StreamTokenizer.TT_EOF){
             st.nextToken();
             if(st.ttype == StreamTokenizer.TT_EOF){
@@ -148,14 +160,6 @@ public class Circuit extends Module{
                     String module_file = st.sval;
                     module = Module.loadFile(module_file);
                     module_map.put(module_name, module);
-                    if(module instanceof Gate){
-                        Gate g = (Gate) module;
-                        if(vdd == -1){
-                            throw new UnsupportedOperationException("VDD must be defined first " + st.lineno());
-                        }
-                        g.calcLeakageTable(vdd);
-                        g.printTable();
-                    }
                     System.out.println(circ.name + ": Add module " + module_name + " (" + module.name + ")");
                     break;
                 case "device":
@@ -221,32 +225,23 @@ public class Circuit extends Module{
                 st.nextToken();
             }
         }
+        if(vdd != 0)
+            circ.setVDD(vdd);
         
         return circ;
     }
     
     public static void main(String args[]) throws Exception{
         //Circuit circ = (Circuit) Circuit.loadFile("FA.circ");
-        Module circ = Module.loadFile("FA16.circ");
-        if(circ instanceof Gate)
-            ((Gate)circ).calcLeakageTable(1.2);
-        System.out.println(circ.toString());
-        for(int i=10000000;i>0;i--){
-            circ.evaluateOutput(new Logic[]{
-                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
-                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
-                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
-                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
-                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
-                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
-                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
-                Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
-                Logic.LOW
-            });
+        Module circ = Module.loadFile("AND.circ");
+        if(circ.vdd == 0){
+            circ.setVDD(1.2);
         }
+        System.out.println(circ.toString());
+        circ.evaluateOutput(new Logic[]{
+            Logic.HIGH,Logic.LOW
+        });
         System.out.println(circ.collectLeakage());
-        circ.printInput();
-        circ.printOutput();
         /*Gate xor = Gate.loadFile("XOR.gate");
         xor.calcLeakageTable(1.2);
         xor.printTable();

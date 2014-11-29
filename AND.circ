@@ -1,6 +1,5 @@
 #AND
-vdd 1.2
-include nand NAND.gate
+include nand NAND2.gate
 include inv Inverter.gate
 input A
 input B

@@ -32,8 +32,9 @@ public class LeakageMinimizer {
         for(int i=0;i<getParallelism();i++){
             /*Complete independent*/
             Module m = Module.loadFile(filename);
-            if(m instanceof Gate)
-                ((Gate)m).calcLeakageTable(1.2);
+            if(m.vdd == 0){
+                m.setVDD(1.2);
+            }
             this.module[i] = m;
         }
     }
@@ -86,7 +87,7 @@ public class LeakageMinimizer {
         LeakageMinimizer lm = new MonteCarloLeakageMinimizer();
         //LeakageMinimizer lm = new ParallelLeakageMinimizer(8);
         //LeakageMinimizer lm = new LeakageMinimizer();
-        lm.loadModule("FA16.circ");
+        lm.loadModule("FA8.circ");
         lm.minimizeLeakage();
     }
 }

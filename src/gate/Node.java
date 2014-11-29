@@ -20,6 +20,7 @@ public class Node <T> {
     public String alias = "";
     
     public Logic logic = Logic.UNKNOWN;
+    public double voltage = Double.NaN;
     int retries = 0;
     
     public static final int GROUND = 0;
