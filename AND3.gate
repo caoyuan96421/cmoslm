@@ -1,0 +1,14 @@
+# AND3XL GSCLIB090
+table
+vdd 1.2
+input A B C
+output OUT
+# Input		Output		Leakage
+000			0			0.888e-9
+001			0			1.501e-9
+010			0			1.561e-9
+011			0			24.09e-9
+100			0			1.563e-9
+101			0			26.61e-9
+110			0			46.54e-9
+111			1			47.45e-9

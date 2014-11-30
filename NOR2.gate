@@ -1,0 +1,10 @@
+# NOR2XL GSCLIB090
+table
+vdd 1.2
+input A B
+output OUT
+# Input		Output		Leakage
+00			1			105.2e-9
+01			0			0.630e-9
+10			0			0.347e-9
+11			0			0.012e-9

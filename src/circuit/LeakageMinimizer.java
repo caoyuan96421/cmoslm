@@ -28,6 +28,10 @@ public class LeakageMinimizer {
         return 1;
     }
     
+    public void setModule(Module m){
+        module[0] = m;
+    }
+    
     public void loadModule(String filename) throws Exception{
         for(int i=0;i<getParallelism();i++){
             /*Complete independent*/
@@ -84,10 +88,10 @@ public class LeakageMinimizer {
     }
     
     public static void main(String args[]) throws Exception{
-        LeakageMinimizer lm = new MonteCarloLeakageMinimizer();
-        //LeakageMinimizer lm = new ParallelLeakageMinimizer(8);
+        //LeakageMinimizer lm = new MonteCarloLeakageMinimizer();
+        LeakageMinimizer lm = new ParallelLeakageMinimizer(8);
         //LeakageMinimizer lm = new LeakageMinimizer();
-        lm.loadModule("FA8.circ");
+        lm.loadModule("benchmark/C17.circ");
         lm.minimizeLeakage();
     }
 }

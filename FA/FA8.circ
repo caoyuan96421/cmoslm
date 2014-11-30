@@ -1,9 +1,9 @@
 # FA8.circ
 vdd 1.2
-include fa FA.circ
+include fa FA.gate
 
-input A0 A1 A2 A3 A4 A5 A6 A7 B0 B1 B2 B3 B4 B5 B6 B7 Cin
-output S0 S1 S2 S3 S4 S5 S6 S7 C7
+input A7 A6 A5 A4 A3 A2 A1 A0 B7 B6 B5 B4 B3 B2 B1 B0 Cin
+output C7 S7 S6 S5 S4 S3 S2 S1 S0
 
 device fa A=A0 B=B0 C=Cin S=S0 Cout=C0
 device fa A=A1 B=B1 C=C0 S=S1 Cout=C1

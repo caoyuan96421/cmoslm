@@ -1,8 +1,8 @@
 # Multiplier 4x4
-vdd 1.0
-include ha HA.circ
+vdd 1.2
+include ha HA.gate
 include fa FA.gate
-include and AND.circ
+include and AND2.gate
 input A3 A2 A1 A0
 input B3 B2 B1 B0
 output S7 S6 S5 S4 S3 S2 S1 S0

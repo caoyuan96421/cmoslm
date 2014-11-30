@@ -1,0 +1,10 @@
+# ADDHXL GSCLIB090
+table
+vdd 1.2
+input A B
+output C S
+# Input		Output		Leakage
+00			00			142.20e-9
+01			01			173.56e-9
+10			01			146.94e-9
+11			10			127.44e-9

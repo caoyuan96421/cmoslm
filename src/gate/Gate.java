@@ -232,12 +232,14 @@ public class Gate extends Module{
             });
             
             List<Logic> output_list = new ArrayList<>();
-            String.format("%" + output_nodes.size() + "s", Integer.toBinaryString(output_table[i])).replace(' ', '0').chars().forEachOrdered((ch) -> {
-                if(ch == '0')
-                    output_list.add(Logic.LOW);
-                else
-                    output_list.add(Logic.HIGH);
-            });
+            if(!output_nodes.isEmpty()){
+                String.format("%" + output_nodes.size() + "s", Integer.toBinaryString(output_table[i])).replace(' ', '0').chars().forEachOrdered((ch) -> {
+                    if(ch == '0')
+                        output_list.add(Logic.LOW);
+                    else
+                        output_list.add(Logic.HIGH);
+                });
+            }
             System.out.println(input_names + " -> " + input_list + ": " + output_names + " = " + output_list + ", leak=" + leakage_table[i]);
             
         }

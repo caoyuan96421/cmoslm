@@ -1,0 +1,10 @@
+# XOR2XL GSCLIB090
+table
+vdd 1.2
+input A B
+output OUT
+# Input		Output		Leakage
+00			0			140.3e-9
+01			1			146.5e-9
+10			1			99.84e-9
+11			0			74.26e-9

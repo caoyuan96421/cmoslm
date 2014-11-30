@@ -1,0 +1,8 @@
+# INVXL GSCLIB090
+table
+vdd 1.2
+input A
+output OUT
+# Input		Output		Leakage
+0			1			52.65e-9
+1			0			0.629e-9

@@ -1,10 +1,10 @@
-# NAND2
+# NAND2XL GSCLIB090
 table
 vdd 1.2
 input A B
 output OUT
 # Input		Output		Leakage
-00			1			1.404e-9
-01			1			28.86e-9
-10			1			52.26e-9
-11			0			1.637e-9
+00			1			1.370e-9
+01			1			28.915e-9
+10			1			52.531e-9
+11			0			1.259e-9

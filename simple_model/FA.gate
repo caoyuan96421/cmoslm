@@ -1,0 +1,43 @@
+# CMOS 28T Full Adder
+model nmos 240 100 ntype
+model pmos 480 100 ptype
+# inputs and outputs
+input A
+input B
+input C
+output S
+output Cout
+# Generate Carry
+device pmos A N000 VDD
+device pmos B N000 VDD
+device pmos C Cn N000
+device pmos B N001 VDD
+device pmos A Cn N001
+device nmos A N100 GND
+device nmos B N100 GND
+device nmos C Cn N100
+device nmos B N101 GND
+device nmos A Cn N101
+
+# Generate sum
+device pmos A N200 VDD
+device pmos B N200 VDD
+device pmos C N200 VDD
+device pmos Cn N300 N200
+device nmos Cn N300 N201
+device nmos C N201 GND
+device nmos B N201 GND
+device nmos A N201 GND
+
+device pmos A N301 VDD
+device pmos B N302 N301
+device pmos C N300 N302
+device nmos C N300 N312
+device nmos B N312 N311
+device nmos A N311 GND
+
+# Inverters
+device pmos N300 S VDD
+device nmos N300 S GND
+device pmos Cn Cout VDD
+device nmos Cn Cout GND

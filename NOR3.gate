@@ -1,0 +1,14 @@
+# NOR3XL GSCLIB090
+table
+vdd 1.2
+input A B C
+output OUT
+# Input		Output		Leakage
+000			1			157.35e-9
+001			0			0.629e-9
+010			0			0.347e-9
+011			0			0.012e-9
+100			0			0.322e-9
+101			0			0.012e-9
+110			0			0.011e-9
+111			0			0.005e-9

@@ -21,7 +21,7 @@ public class MonteCarloLeakageMinimizer extends LeakageMinimizer{
     
     private static final int PASS_PER_TEMP = 1;
     private static final double T0 = 10e-6;
-    private static final double COOLING_RATE = 0.99;
+    private static final double COOLING_RATE = 0.9;
     private static final double T1 = 1e-12;
     
     @Override

@@ -1,0 +1,11 @@
+# C17 Benchmark circuit
+vdd 1.2
+include nand NAND2.gate
+input N1 N2 N3 N6 N7
+output N22 N23
+device nand A=N1 B=N3 OUT=N10
+device nand A=N3 B=N6 OUT=N11
+device nand A=N2 B=N11 OUT=N16
+device nand A=N11 B=N7 OUT=N19
+device nand A=N10 B=N16 OUT=N22
+device nand A=N16 B=N19 OUT=N23

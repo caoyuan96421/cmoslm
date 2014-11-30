@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import misc.ISC89Loader;
 import tech.MOSFET;
 import tech.NMOS;
 import tech.PMOS;
@@ -52,8 +53,8 @@ public class Circuit extends Module{
     
     public void addModule(Module m, List<String> ports, List<String> nodes){
         if(ports.size() != nodes.size() || ports.size() != m.getInputSize() + m.getOutputSize()){
-            System.err.println(name + ": input or output size mismatch in " + m.name);
-            return;
+            System.out.println(name + ": " + ports + "->" + nodes);
+            throw new UnsupportedOperationException(name + ": input or output size mismatch in " + m.name);
         }
         
         ModuleInstance gw = new ModuleInstance(m);
@@ -80,10 +81,12 @@ public class Circuit extends Module{
                 m.updateOutput();
                 update_order.add(m);
                 last=counter;
+                System.out.println(m.toShortString());
             }
             else{
                 if(counter - last >= 2 * q.size() + 2){
                     /*We've gone through the whole queue for two passes, but nothing updated*/
+                    System.out.println(Arrays.asList(q.stream().map(mod -> mod.toShortString()).toArray()));
                     throw new UnsupportedOperationException(name + ": Loop detected in circuit.");
                 }
                 q.addLast(m);
@@ -233,14 +236,25 @@ public class Circuit extends Module{
     
     public static void main(String args[]) throws Exception{
         //Circuit circ = (Circuit) Circuit.loadFile("FA.circ");
-        Module circ = Module.loadFile("AND.circ");
+        Module circ = ISC89Loader.loadFile("benchmark/c432.bench");
         if(circ.vdd == 0){
             circ.setVDD(1.2);
         }
         System.out.println(circ.toString());
         circ.evaluateOutput(new Logic[]{
-            Logic.HIGH,Logic.LOW
+            Logic.LOW,Logic.HIGH,Logic.LOW,Logic.HIGH,
+            Logic.LOW,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+            Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+            Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+            Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+            Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+            Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+            Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+            Logic.HIGH,Logic.HIGH,Logic.HIGH,Logic.HIGH,
+            
         });
+        circ.printInput();
+        circ.printOutput();
         System.out.println(circ.collectLeakage());
         /*Gate xor = Gate.loadFile("XOR.gate");
         xor.calcLeakageTable(1.2);
