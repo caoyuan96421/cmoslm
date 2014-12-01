@@ -1,0 +1,11 @@
+# FA4.circ
+vdd 1.2
+include fa FA.gate
+
+input A3 A2 A1 A0 B3 B2 B1 B0 Cin
+output C3 S3 S2 S1 S0
+
+device fa A=A0 B=B0 C=Cin S=S0 Cout=C0
+device fa A=A1 B=B1 C=C0 S=S1 Cout=C1
+device fa A=A2 B=B2 C=C1 S=S2 Cout=C2
+device fa A=A3 B=B3 C=C2 S=S3 Cout=C3

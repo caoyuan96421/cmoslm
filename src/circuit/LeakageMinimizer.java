@@ -6,6 +6,11 @@
 package circuit;
 
 import gate.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 /**
@@ -87,11 +92,45 @@ public class LeakageMinimizer {
         System.out.println("Best input: " + Arrays.asList(best_input));
     }
     
+    public void saveLeakageTable(String filename) throws FileNotFoundException, IOException{
+        File file = new File(filename);
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
+        
+        int n = module[0].getInputSize();
+        BigInteger N = BigInteger.valueOf(2).pow(n);
+        if(n > 24){
+            throw new UnsupportedOperationException("Number of input vectors " + N.toString() +" is very large. Be careful.");
+        }
+        best_leakage = Double.MAX_VALUE;
+        best_input = null;
+        for(BigInteger i = BigInteger.ZERO; i.subtract(N).signum() < 0; i = i.add(BigInteger.ONE)){
+            Logic []input = new Logic[n];
+            for(int j=0;j<n;j++){
+                input[j] = i.testBit(n-j-1) ? Logic.HIGH : Logic.LOW;
+            }
+            //System.out.println("Trying input: " + Arrays.asList(input));
+            double leakage = leakage(0, input);
+            //System.out.println("Leakage: " + leakage);
+            bos.write((i.toString() + "\t" + leakage + "\n").getBytes());
+            if(leakage < best_leakage){
+                best_leakage = leakage;
+                best_input = input;
+            }
+        }
+        bos.close();
+        System.out.println();
+        System.out.println("Best leakage: " + best_leakage);
+        System.out.println("Best input: " + Arrays.asList(best_input));
+    }
+    
     public static void main(String args[]) throws Exception{
-        //LeakageMinimizer lm = new MonteCarloLeakageMinimizer();
-        LeakageMinimizer lm = new ParallelLeakageMinimizer(8);
+        MonteCarloLeakageMinimizer lm = new MonteCarloLeakageMinimizer();
+        //LeakageMinimizer lm = new ParallelLeakageMinimizer(8);
         //LeakageMinimizer lm = new LeakageMinimizer();
         lm.loadModule("benchmark/C17.circ");
-        lm.minimizeLeakage();
+        //lm.minimizeLeakage();
+        //lm.saveLeakageTable("FA/FA4.txt");
+        lm.minimizeLeakageWithOutput("benchmark/C17.dat");
     }
 }
+

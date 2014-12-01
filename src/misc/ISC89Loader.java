@@ -255,9 +255,9 @@ public class ISC89Loader {
         Circuit circ = ISC89Loader.loadFile("benchmark/c7552.bench");
         System.out.println(circ.toString());
         
-        LeakageMinimizer lm = new MonteCarloLeakageMinimizer();
+        MonteCarloLeakageMinimizer lm = new MonteCarloLeakageMinimizer();
         //LeakageMinimizer lm = new LeakageMinimizer();
         lm.setModule(circ);
-        lm.minimizeLeakage();
+        lm.minimizeLeakageWithOutput("benchmark/out.dat");
     }
 }
