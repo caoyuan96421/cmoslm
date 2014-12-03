@@ -28,7 +28,7 @@ public class MonteCarloLeakageMinimizer extends LeakageMinimizer{
     private static final int PASS_PER_TEMP = 10;
     private static final double T0 = 10e-6;
     private static final double COOLING_RATE = 0.98;
-    private static final double T1 = 1e-9;
+    private static final double T1 = 1e-10;
     private static final int DOUBLE_FLIP_FREQ = 10;
     
     @Override
@@ -102,20 +102,20 @@ public class MonteCarloLeakageMinimizer extends LeakageMinimizer{
                         best_input = input.clone();
                     }
                     //System.out.println(best_leakage + " " + Arrays.asList(best_input));
-                    /*long i=0;
+                    String i="";
                     for(int j=0;j<best_input.length;j++)
-                        i = (i << 1L) | (best_input[j] == Logic.HIGH ? 1L : 0L);
-                    bos.write((T + "\t" + i + "\t" + best_leakage + "\n").getBytes());*/
+                        i = i + (input[j] == Logic.HIGH ? "1" : "0");
+                    bos.write((T + "\t" + i + "\t" + leakage + "\n\n\n").getBytes());
                 }
                 else{
                     /*Monte Carlo*/
                     double th = Math.exp(-(leakage - best_leakage) / T);
                     if(random.nextDouble() < th){
                         current_leakage = leakage;
-                        /*long i=0;
+                        String i="";
                         for(int j=0;j<best_input.length;j++)
-                            i = (i << 1L) | (best_input[j] == Logic.HIGH ? 1L : 0L);
-                        bos.write((T + "\t" + i + "\t" + best_leakage + "\n").getBytes());*/
+                            i = i + (input[j] == Logic.HIGH ? "1" : "0");
+                        bos.write((T + "\t" + i + "\t" + leakage + "\n\n\n").getBytes());
                         //System.out.println(best_leakage + " " + Arrays.asList(best_input));
                     }
                     else{
@@ -141,11 +141,10 @@ public class MonteCarloLeakageMinimizer extends LeakageMinimizer{
                     }
                 }
             }
-            
-            long i=0;
+            String i="";
             for(int j=0;j<best_input.length;j++)
-                i = (i << 1L) | (best_input[j] == Logic.HIGH ? 1L : 0L);
-            bos.write((T + "\t" + i + "\t" + best_leakage + "\n").getBytes());
+                i = i + (input[j] == Logic.HIGH ? "1" : "0");
+            bos.write((T + "\t" + i + "\t" + best_leakage + "\n\n\n").getBytes());
             
         }
         

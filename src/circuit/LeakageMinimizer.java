@@ -127,10 +127,10 @@ public class LeakageMinimizer {
         MonteCarloLeakageMinimizer lm = new MonteCarloLeakageMinimizer();
         //LeakageMinimizer lm = new ParallelLeakageMinimizer(8);
         //LeakageMinimizer lm = new LeakageMinimizer();
-        lm.loadModule("benchmark/C17.circ");
+        lm.loadModule("FA/FA16.circ");
         //lm.minimizeLeakage();
         //lm.saveLeakageTable("FA/FA4.txt");
-        lm.minimizeLeakageWithOutput("benchmark/C17.dat");
+        lm.minimizeLeakageWithOutput("FA/FA16.dat");
     }
 }
 
